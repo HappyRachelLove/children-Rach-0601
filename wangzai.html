@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>六一儿童节</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #fff0f5 0%, #fff8e1 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Ma Shan Zheng', cursive, sans-serif;
+    overflow: hidden; position: relative;
+  }
+  .hearts-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .heart-particle {
+    position: absolute; font-size: 1.4rem;
+    animation: floatUp linear infinite; opacity: 0.5;
+  }
+  @keyframes floatUp {
+    0%   { transform: translateY(110vh) rotate(0deg); opacity: 0.6; }
+    100% { transform: translateY(-10vh) rotate(20deg); opacity: 0; }
+  }
+  .card {
+    background: #fff; border-radius: 32px;
+    padding: 40px 52px 40px; box-shadow: 0 8px 48px rgba(255,120,150,0.2);
+    text-align: center; max-width: 500px; width: 92vw;
+    position: relative; z-index: 1;
+    animation: cardIn 0.6s cubic-bezier(.34,1.56,.64,1) both;
+    border: 2px solid #ffe0ec;
+  }
+  @keyframes cardIn {
+    from { opacity:0; transform: scale(0.8) translateY(30px); }
+    to   { opacity:1; transform: scale(1) translateY(0); }
+  }
+  .title { font-size: 1.5rem; color: #333; margin-bottom: 6px; line-height: 1.6; }
+  .subtitle { font-size: 1rem; color: #ff7fa0; margin-bottom: 2px; }
+
+  /* snack list static */
+  .snack-static {
+    font-size: 0.95rem; color: #f97316; margin: 6px 0 4px;
+    line-height: 1.9;
+  }
+  .snack-static span { margin: 0 3px; }
+
+  .emoji-wrap {
+    margin: 14px auto 22px; width: 155px; height: 155px;
+    animation: bounce 1.8s ease-in-out infinite;
+  }
+  @keyframes bounce {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-10px); }
+  }
+  .btn-row {
+    display: flex; justify-content: space-between;
+    align-items: center; gap: 16px; position: relative;
+  }
+  .btn {
+    padding: 14px 36px; border: none; border-radius: 14px;
+    font-size: 1.25rem; font-family: inherit; cursor: pointer;
+    font-weight: 700; letter-spacing: 2px;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-accept {
+    background: linear-gradient(135deg,#56c85a,#34a83a);
+    color: #fff; box-shadow: 0 4px 16px rgba(76,175,80,0.4);
+  }
+  .btn-accept:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(76,175,80,0.55); }
+  .btn-reject {
+    background: linear-gradient(135deg,#d9534f,#b03030);
+    color: #fff; box-shadow: 0 4px 16px rgba(185,64,64,0.3);
+    position: absolute; right: 0; transition: none;
+  }
+  .counter-text { font-size: 0.88rem; color: #f97316; margin-top: 12px; min-height: 22px; }
+
+  /* music toggle */
+  .music-btn {
+    position: fixed; top: 18px; right: 18px; z-index: 100;
+    background: #fff; border: 2px solid #ffb3cc; border-radius: 50%;
+    width: 44px; height: 44px; font-size: 1.3rem; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(255,120,150,0.2);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s;
+  }
+  .music-btn:hover { transform: scale(1.15); }
+  .music-btn.playing { animation: spin 3s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* success page */
+  #success-page { display:none; flex-direction:column; align-items:center; text-align:center; }
+  #success-page.show { display:flex; animation: cardIn 0.6s cubic-bezier(.34,1.56,.64,1) both; }
+  .success-title { font-size: 2rem; color: #e05a8a; margin-bottom: 8px; }
+  .success-sub   { font-size: 1.15rem; color: #555; margin-bottom: 4px; }
+  .snack-list    { font-size: 1.5rem; margin-top: 10px; letter-spacing: 4px; }
+
+  .confetti-wrap { position:fixed; inset:0; pointer-events:none; z-index:99; }
+  .confetto {
+    position:absolute; border-radius:2px;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity:1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity:0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hearts-bg" id="heartsBg"></div>
+<div class="confetti-wrap" id="confettiWrap"></div>
+
+<!-- music toggle -->
+<button class="music-btn" id="musicBtn" onclick="toggleMusic()" title="音乐开关">🎵</button>
+
+<div class="card" id="mainCard">
+  <div id="ask-page">
+    <div class="title">六一儿童节快乐！🎈</div>
+    <div class="subtitle">爱你哟~ ❤️</div>
+    <div class="snack-static">
+      你要给我买：<br>
+      <span>🥛旺仔牛奶</span><span>🧃AD钙奶</span><span>🦐虾条</span><span>🍟薯片</span><span>🍬小糖果</span><span>🐻小熊饼干</span><span>🍭棒棒糖</span>
+    </div>
+
+    <div class="emoji-wrap">
+      <svg id="faceSvg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="faceGrad" cx="42%" cy="32%" r="68%">
+            <stop offset="0%" stop-color="#ffe089"/>
+            <stop offset="100%" stop-color="#f0a020"/>
+          </radialGradient>
+          <!-- cheek glow -->
+          <radialGradient id="blushG" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ffb3c6" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#ffb3c6" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <!-- face -->
+        <circle cx="100" cy="102" r="93" fill="url(#faceGrad)"/>
+        <!-- ear bumps -->
+        <circle cx="10"  cy="102" r="14" fill="#f0a020"/>
+        <circle cx="190" cy="102" r="14" fill="#f0a020"/>
+        <!-- eye whites -->
+        <ellipse cx="68"  cy="84" rx="23" ry="25" fill="white"/>
+        <ellipse cx="132" cy="84" rx="23" ry="25" fill="white"/>
+        <!-- pupils -->
+        <circle id="pupilL" cx="71"  cy="88" r="12" fill="#1a0e06"/>
+        <circle id="pupilR" cx="135" cy="88" r="12" fill="#1a0e06"/>
+        <!-- eye shine -->
+        <circle cx="76"  cy="81" r="5" fill="white"/>
+        <circle cx="140" cy="81" r="5" fill="white"/>
+        <!-- small shine dot -->
+        <circle cx="66"  cy="91" r="2.5" fill="white" opacity="0.6"/>
+        <circle cx="130" cy="91" r="2.5" fill="white" opacity="0.6"/>
+        <!-- blush circles -->
+        <ellipse cx="46"  cy="122" rx="20" ry="12" fill="url(#blushG)"/>
+        <ellipse cx="154" cy="122" rx="20" ry="12" fill="url(#blushG)"/>
+        <!-- eyebrows (happy arched) -->
+        <path d="M48 65 Q68 52 88 62"  stroke="#c47a1a" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+        <path d="M112 62 Q132 52 152 65" stroke="#c47a1a" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+        <!-- MOUTH: big open happy smile, rounded teeth like a row of Tic Tacs -->
+        <!-- outer mouth shape -->
+        <path d="M60 125 Q100 178 140 125" fill="#b03020"/>
+        <!-- inner mouth / tongue area -->
+        <path d="M63 128 Q100 170 137 128 Q100 155 63 128Z" fill="#8b1a10"/>
+        <!-- upper teeth: rounded rectangles in an arc -->
+        <path d="M66 128 Q100 138 134 128" fill="white" stroke="white" stroke-width="1"/>
+        <rect x="72"  y="122" width="14" height="13" rx="6" fill="white"/>
+        <rect x="88"  y="124" width="14" height="13" rx="6" fill="white"/>
+        <rect x="104" y="124" width="14" height="13" rx="6" fill="white"/>
+        <rect x="120" y="122" width="14" height="13" rx="6" fill="white"/>
+        <!-- divider lines between teeth -->
+        <line x1="86"  y1="124" x2="86"  y2="134" stroke="#ddd" stroke-width="1.2"/>
+        <line x1="102" y1="125" x2="102" y2="135" stroke="#ddd" stroke-width="1.2"/>
+        <line x1="118" y1="124" x2="118" y2="134" stroke="#ddd" stroke-width="1.2"/>
+        <!-- tongue -->
+        <ellipse cx="100" cy="155" rx="20" ry="11" fill="#e05070"/>
+        <line x1="100" y1="144" x2="100" y2="164" stroke="#c03050" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="btn-row" id="btnRow">
+      <button class="btn btn-accept" onclick="handleAccept()">接受 🎉</button>
+      <button class="btn btn-reject" id="rejectBtn" onmouseenter="escapeBtn()" ontouchstart="escapeBtn(event)">拒绝</button>
+    </div>
+    <div class="counter-text" id="counterText"></div>
+  </div>
+
+  <!-- success page -->
+  <div id="success-page">
+    <div class="emoji-wrap" style="margin-top:8px; width:170px; height:170px;">
+      <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="faceGrad2" cx="42%" cy="32%" r="68%">
+            <stop offset="0%" stop-color="#ffe089"/>
+            <stop offset="100%" stop-color="#f0a020"/>
+          </radialGradient>
+          <radialGradient id="blushG2" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ffb3c6" stop-opacity="0.9"/>
+            <stop offset="100%" stop-color="#ffb3c6" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="100" cy="102" r="93" fill="url(#faceGrad2)"/>
+        <circle cx="10"  cy="102" r="14" fill="#f0a020"/>
+        <circle cx="190" cy="102" r="14" fill="#f0a020"/>
+        <!-- star eyes -->
+        <text x="68"  y="98" font-size="38" text-anchor="middle">⭐</text>
+        <text x="132" y="98" font-size="38" text-anchor="middle">⭐</text>
+        <!-- blush -->
+        <ellipse cx="46"  cy="118" rx="20" ry="12" fill="url(#blushG2)"/>
+        <ellipse cx="154" cy="118" rx="20" ry="12" fill="url(#blushG2)"/>
+        <!-- big smile same style -->
+        <path d="M55 118 Q100 182 145 118" fill="#b03020"/>
+        <path d="M58 121 Q100 172 142 121 Q100 155 58 121Z" fill="#8b1a10"/>
+        <path d="M60 121 Q100 133 140 121" fill="white" stroke="white" stroke-width="1"/>
+        <rect x="66"  y="115" width="15" height="13" rx="6" fill="white"/>
+        <rect x="83"  y="117" width="15" height="13" rx="6" fill="white"/>
+        <rect x="100" y="118" width="15" height="13" rx="6" fill="white"/>
+        <rect x="117" y="117" width="15" height="13" rx="6" fill="white"/>
+        <rect x="134" y="115" width="15" height="13" rx="6" fill="white"/>
+        <line x1="83"  y1="117" x2="83"  y2="127" stroke="#ddd" stroke-width="1.2"/>
+        <line x1="100" y1="118" x2="100" y2="128" stroke="#ddd" stroke-width="1.2"/>
+        <line x1="117" y1="117" x2="117" y2="127" stroke="#ddd" stroke-width="1.2"/>
+        <line x1="134" y1="115" x2="134" y2="125" stroke="#ddd" stroke-width="1.2"/>
+        <ellipse cx="100" cy="158" rx="22" ry="11" fill="#e05070"/>
+        <line x1="100" y1="147" x2="100" y2="167" stroke="#c03050" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="success-title">谢谢宝宝~ 🎉</div>
+    <div class="success-sub">我要永远做你的小朋友！</div>
+    <div class="snack-list">🥛🧃🍬🍟🍭</div>
+    <div style="font-size:0.95rem;color:#f97316;margin-top:10px;">旺仔牛奶✦AD钙奶✦虾条✦薯片✦小糖果</div>
+    <div style="font-size:0.9rem;color:#ccc;margin-top:6px;">都买都买，全都买！😋</div>
+  </div>
+</div>
+
+<script>
+// ─── floating bg ─────────────────────────────────
+const bg = document.getElementById('heartsBg');
+const symbols = ['❤️','🧡','💛','💖','🌸','⭐','✨','🍬','🎈','🥛'];
+for (let i = 0; i < 20; i++) {
+  const el = document.createElement('div');
+  el.className = 'heart-particle';
+  el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+  el.style.left = Math.random() * 100 + 'vw';
+  el.style.animationDuration = (4 + Math.random() * 7) + 's';
+  el.style.animationDelay = (Math.random() * 7) + 's';
+  el.style.fontSize = (1 + Math.random() * 1.1) + 'rem';
+  bg.appendChild(el);
+}
+
+// ─── reject button ────────────────────────────────
+let rejectCount = 0;
+const rejectBtn = document.getElementById('rejectBtn');
+const counterText = document.getElementById('counterText');
+const card = document.getElementById('mainCard');
+
+const taunts = [
+  '跑掉啦~ 😜','不让你点！','快来点接受嘛 🥺','哼哼，追不到~','拒绝？不存在的！',
+  '再试试看 😆','还想点我？美滋滋~','你拿我没办法哦','ヾ(≧▽≦*)o 嘿嘿',
+];
+
+function escapeBtn(e) {
+  if (e) e.preventDefault();
+  rejectCount++;
+  const acceptBtn = document.querySelector('.btn-accept');
+  const scale = Math.min(1 + rejectCount * 0.08, 2.0);
+  acceptBtn.style.transform = `scale(${scale})`;
+  acceptBtn.style.fontSize = Math.min(1.25 + rejectCount * 0.06, 2) + 'rem';
+
+  moveRejectBtn();
+  counterText.textContent = taunts[(rejectCount - 1) % taunts.length];
+  playBlip(300 + rejectCount * 30);
+}
+
+function moveRejectBtn() {
+  const margin = 12;
+  const bw = rejectBtn.offsetWidth;
+  const bh = rejectBtn.offsetHeight;
+  const newLeft = margin + Math.random() * Math.max(0, window.innerWidth  - bw - margin * 2);
+  const newTop  = margin + Math.random() * Math.max(0, window.innerHeight - bh - margin * 2);
+  rejectBtn.style.position = 'fixed';
+  rejectBtn.style.left = newLeft + 'px';
+  rejectBtn.style.top  = newTop  + 'px';
+}
+
+// keep running on its own every 1.2s so it's never stable
+let autoRunTimer = setInterval(() => {
+  if (rejectCount > 0) moveRejectBtn();
+}, 1200);
+
+// ─── accept ───────────────────────────────────────
+function handleAccept() {
+  playSuccess();
+  clearInterval(autoRunTimer);
+  const wrap = document.getElementById('confettiWrap');
+  const colors = ['#ff7fa0','#ffd97d','#7ecfff','#a8f0c6','#ffb3e6','#ffe57f','#ff9f5a'];
+  for (let i = 0; i < 80; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetto';
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.top = '-20px';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    c.style.animationDuration = (1.5 + Math.random() * 2.5) + 's';
+    c.style.animationDelay = Math.random() * 0.6 + 's';
+    const sz = (6 + Math.random() * 12) + 'px';
+    c.style.width = sz; c.style.height = sz;
+    wrap.appendChild(c);
+  }
+  document.getElementById('ask-page').style.display = 'none';
+  document.getElementById('success-page').classList.add('show');
+}
+
+// ─── eye tracking ─────────────────────────────────
+document.addEventListener('mousemove', (e) => {
+  const svg = document.getElementById('faceSvg');
+  if (!svg) return;
+  const rect = svg.getBoundingClientRect();
+  const sx = 200 / rect.width, sy = 200 / rect.height;
+  const mx = (e.clientX - rect.left) * sx;
+  const my = (e.clientY - rect.top) * sy;
+  [['pupilL',68,88],['pupilR',132,88]].forEach(([id,cx,cy]) => {
+    const el = document.getElementById(id); if (!el) return;
+    const dx = mx-cx, dy = my-cy, d = Math.sqrt(dx*dx+dy*dy), r = 8;
+    el.setAttribute('cx', cx + (d>r ? dx/d*r : dx));
+    el.setAttribute('cy', cy + (d>r ? dy/d*r : dy));
+  });
+});
+
+// ─── Web Audio music ──────────────────────────────
+let audioCtx = null, musicPlaying = false, musicNodes = [];
+const musicBtn = document.getElementById('musicBtn');
+
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+// Cheerful melody: C maj pentatonic notes (Hz)
+const melody = [
+  523.25, 659.25, 783.99, 880.00, 783.99, 659.25,
+  523.25, 587.33, 659.25, 783.99, 659.25, 587.33,
+  523.25, 783.99, 880.00, 1046.5, 880.00, 783.99,
+  659.25, 523.25, 587.33, 523.25,
+];
+const durations = [0.18,0.18,0.18,0.18,0.18,0.18,0.36,0.18,0.18,0.18,0.18,0.36,0.18,0.18,0.18,0.36,0.18,0.18,0.18,0.18,0.18,0.36];
+
+let melodyTimer = null;
+let noteIdx = 0;
+
+function playNote(freq, dur, ctx, masterGain) {
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'triangle';
+  osc.frequency.value = freq;
+  gain.gain.setValueAtTime(0.18, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur * 0.9);
+  osc.connect(gain);
+  gain.connect(masterGain);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + dur);
+}
+
+let masterGainNode = null;
+
+function scheduleMelody() {
+  const ctx = getCtx();
+  if (!masterGainNode) {
+    masterGainNode = ctx.createGain();
+    masterGainNode.gain.value = 1;
+    masterGainNode.connect(ctx.destination);
+  }
+  const freq = melody[noteIdx % melody.length];
+  const dur  = durations[noteIdx % durations.length];
+  playNote(freq, dur, ctx, masterGainNode);
+  noteIdx++;
+  melodyTimer = setTimeout(scheduleMelody, dur * 1000 + 10);
+}
+
+function startMusic() {
+  const ctx = getCtx();
+  if (ctx.state === 'suspended') ctx.resume();
+  scheduleMelody();
+  musicPlaying = true;
+  musicBtn.textContent = '🎶';
+  musicBtn.classList.add('playing');
+}
+
+function stopMusic() {
+  clearTimeout(melodyTimer);
+  musicPlaying = false;
+  musicBtn.textContent = '🎵';
+  musicBtn.classList.remove('playing');
+}
+
+function toggleMusic() {
+  musicPlaying ? stopMusic() : startMusic();
+}
+
+// blip on reject
+function playBlip(freq) {
+  try {
+    const ctx = getCtx();
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.15, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(); o.stop(ctx.currentTime + 0.12);
+  } catch(e){}
+}
+
+// success fanfare
+function playSuccess() {
+  try {
+    const ctx = getCtx();
+    [523,659,784,1047].forEach((f,i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = 'triangle'; o.frequency.value = f;
+      const t = ctx.currentTime + i * 0.12;
+      g.gain.setValueAtTime(0.2, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t); o.stop(t + 0.35);
+    });
+  } catch(e){}
+}
+
+// auto-start music on first interaction
+document.addEventListener('click', function autoStart() {
+  if (!musicPlaying) startMusic();
+  document.removeEventListener('click', autoStart);
+}, { once: true });
+</script>
+</body>
+</html>
